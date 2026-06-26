@@ -96,6 +96,13 @@ body {
   background:transparent; display:flex; align-items:center; justify-content:center;
   cursor:pointer; flex-shrink:0; font-size:15px;
 }
+.undo-btn {
+  padding:6px 14px; border-radius:10px; border:none;
+  background:var(--accent-warm); color:#fff;
+  font-family:'Quicksand',sans-serif; font-size:12px; font-weight:700;
+  cursor:pointer; flex-shrink:0; animation:undoPulse 1s ease-in-out infinite alternate;
+}
+@keyframes undoPulse { from{opacity:1} to{opacity:0.7} }
 
 /* Flower Card */
 .flower-card {
@@ -218,7 +225,7 @@ const {useState,useEffect,useCallback,useRef} = React;
 const e = React.createElement;
 
 // ══════════ CONFIG ══════════
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.4.1';
 const CLOUDINARY_CLOUD = 'dfahiahjp';
 const CLOUDINARY_PRESET = 'ml_default';
 const SHEET_API = 'YOUR_APPS_SCRIPT_URL_HERE';
@@ -234,6 +241,9 @@ const PHIL_IMAGES = {
 
 // ══════════ CHANGELOG ══════════
 const CHANGELOG = {
+  '1.4.1': [
+    '撤销按钮改到任务卡片上，橘粉色闪烁提示，持续15秒不会错过',
+  ],
   '1.4.0': [
     '打卡后5秒内可撤销（Toast右侧撤销按钮）',
     '鲜花超过两天没换水时花卡变橘粉色提醒',
@@ -449,12 +459,13 @@ function StatsBar({records}) {
 }
 
 // ══════════ TASK CARD ══════════
-function TaskCard({task,records,onCheck}) {
+function TaskCard({task,records,onCheck,recentUndo,onUndo}) {
   var completed=isCompletedInPeriod(task.id,task.freq,records);
   var overdue=!completed&&isOverdue(task.id,task.freq,records);
   var count=getTaskCount(task.id,records);
   var prog=getPeriodProgress(task.id,task.freq,records);
   var cn='task-card'; if(completed) cn+=' completed'; if(overdue) cn+=' overdue';
+  var showUndo=recentUndo===task.id;
   return e('div',{className:cn},
     e('div',{className:'check-circle '+(completed?'checked':''),onClick:function(){!completed&&onCheck(task)}}),
     e('div',{className:'task-info'},
@@ -466,7 +477,8 @@ function TaskCard({task,records,onCheck}) {
       ),
       count>0?e('div',{className:'task-count'},'累计完成 '+count+' 次'):null,
     ),
-    task.photo&&!completed?e('button',{className:'photo-btn',onClick:function(){onCheck(task)}},'📷'):null,
+    showUndo?e('button',{className:'undo-btn',onClick:function(){onUndo()}},'撤销'):null,
+    !showUndo&&task.photo&&!completed?e('button',{className:'photo-btn',onClick:function(){onCheck(task)}},'📷'):null,
   );
 }
 
@@ -615,21 +627,27 @@ function App() {
   },[]);
 
   var toastTimerRef=useRef(null);
-  var showToastFn=useCallback(function(text,canUndo){
+  var undoTimerRef=useRef(null);
+  var rus=useState(null),recentUndo=rus[0],setRecentUndo=rus[1];
+  var showToastFn=useCallback(function(text){
     if(toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    setToast({text:text,canUndo:!!canUndo});
-    toastTimerRef.current=setTimeout(function(){setToast(null)},5000);
+    setToast({text:text});
+    toastTimerRef.current=setTimeout(function(){setToast(null)},4000);
   },[]);
   var handleCheck=function(task){task.photo?setModal(task):completeTask(task,'')};
   var undoLastCheckin=function(){
     var nr=records.slice(0,-1); setRecords(nr); saveRecords(nr);
-    setToast(null);
-    // Note: Sheet record not deleted (append-only), but local state is corrected.
-    // Admin sees the extra record but it won't affect local completion logic.
+    setRecentUndo(null);
+    if(undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    showToastFn('已撤销。本猫当做什么都没发生。');
   };
   var completeTask=async function(task,photoUrl){
     var rec={taskId:task.id,taskName:task.name,freq:task.freq,date:new Date().toISOString(),photoUrl:photoUrl};
     var nr=[].concat(records,[rec]); setRecords(nr); saveRecords(nr); syncToSheet(rec);
+    // Show undo button on this task for 15 seconds
+    setRecentUndo(task.id);
+    if(undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    undoTimerRef.current=setTimeout(function(){setRecentUndo(null)},15000);
     var newCount=nr.length;
     var unlockHit=false;
     if(typeof GALLERY_CONFIG!=='undefined'){
@@ -638,15 +656,15 @@ function App() {
       }
     }
     if(unlockHit){
-      showToastFn('🎨 新画作解锁！去画廊看看',false);
+      showToastFn('🎨 新画作解锁！去画廊看看');
     } else {
-      showToastFn(photoUrl?pickRandom(PHIL_PHOTO):pickRandom(PHIL_CHECKIN),true);
+      showToastFn(photoUrl?pickRandom(PHIL_PHOTO):pickRandom(PHIL_CHECKIN));
     }
   };
   var handleFlower=function(type){
     var entry={type:type,date:new Date().toISOString()};
     var nl=[].concat(flowerLog,[entry]); setFlowerLog(nl); saveFlowerLog(nl); syncFlowerToSheet(entry);
-    showToastFn(type==='wake'?'本猫承认鲜花让这个房间的ROI有所提升。仅限视觉层面。':'换水记录已更新。本猫替那些花谢谢舅舅。',false);
+    showToastFn(type==='wake'?'本猫承认鲜花让这个房间的ROI有所提升。仅限视觉层面。':'换水记录已更新。本猫替那些花谢谢舅舅。');
   };
   var closeGuide=function(){setShowGuide(false);markGuideSeen();if(getSeenVersion()!==APP_VERSION){setShowChangelog(true)}};
   var closeChangelog=function(){setShowChangelog(false);setSeenVersion(APP_VERSION)};
@@ -674,23 +692,20 @@ function App() {
     ),
     tab==='tasks'?e(React.Fragment,null,
       e(FlowerCard,{flowerLog:flowerLog,onAction:handleFlower}),
-      e('div',{className:'task-section'},e('div',{className:'section-label'},'每周任务'),sortedTasks('weekly').map(function(t){return e(TaskCard,{key:t.id,task:t,records:records,onCheck:handleCheck})})),
-      e('div',{className:'task-section'},e('div',{className:'section-label'},'每两周任务'),sortedTasks('biweekly').map(function(t){return e(TaskCard,{key:t.id,task:t,records:records,onCheck:handleCheck})})),
-      e('div',{className:'task-section'},e('div',{className:'section-label'},'每月任务'),sortedTasks('monthly').map(function(t){return e(TaskCard,{key:t.id,task:t,records:records,onCheck:handleCheck})})),
+      e('div',{className:'task-section'},e('div',{className:'section-label'},'每周任务'),sortedTasks('weekly').map(function(t){return e(TaskCard,{key:t.id,task:t,records:records,onCheck:handleCheck,recentUndo:recentUndo,onUndo:undoLastCheckin})})),
+      e('div',{className:'task-section'},e('div',{className:'section-label'},'每两周任务'),sortedTasks('biweekly').map(function(t){return e(TaskCard,{key:t.id,task:t,records:records,onCheck:handleCheck,recentUndo:recentUndo,onUndo:undoLastCheckin})})),
+      e('div',{className:'task-section'},e('div',{className:'section-label'},'每月任务'),sortedTasks('monthly').map(function(t){return e(TaskCard,{key:t.id,task:t,records:records,onCheck:handleCheck,recentUndo:recentUndo,onUndo:undoLastCheckin})})),
     ):tab==='history'?e(HistoryView,{records:records}):e(GalleryView,{totalCount:records.length}),
     e('div',{className:'bottom-spacer'}),
     modal?e(PhotoModal,{task:modal,onClose:function(){setModal(null)},onSubmit:completeTask}):null,
-    toast?e('div',{className:'toast'},
-      e('span',{className:'toast-text'},toast.text),
-      toast.canUndo?e('button',{className:'toast-undo',onClick:undoLastCheckin},'撤销'):null,
-    ):null,
+    toast?e('div',{className:'toast'},e('span',{className:'toast-text'},toast.text)):null,
     showGuide?e(GuideModal,{onClose:closeGuide}):null,
     showChangelog?e(ChangelogModal,{onClose:closeChangelog}):null,
   );
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(e(App));
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=1.4.0')}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=1.4.1')}
 </script>
 </body>
 </html>
