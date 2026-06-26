@@ -1,0 +1,16 @@
+{
+  "name": "Phil の 家务督察站",
+  "short_name": "Phil督察站",
+  "description": "舅舅的家务打卡助手",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F5F0EB",
+  "theme_color": "#9B8E82",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

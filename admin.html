@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="督察总部">
+<title>Phil の 督察总部</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F0EB;
+  --card: #FFFDF9;
+  --primary: #9B8E82;
+  --primary-light: #B5A99A;
+  --accent-green: #8FA68E;
+  --accent-warm: #C4917B;
+  --text: #5A4F45;
+  --text-light: #8A7F75;
+  --border: #E0D8CF;
+  --shadow: rgba(139, 126, 113, 0.08);
+  --radius: 14px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Quicksand', 'Noto Serif SC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-header {
+  background: var(--card);
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.app-header h1 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+.app-header .subtitle {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+/* ── Overview Cards ── */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+.overview-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  box-shadow: 0 2px 8px var(--shadow);
+  text-align: center;
+}
+.overview-card .num {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.overview-card .num.warn { color: var(--accent-warm); }
+.overview-card .num.good { color: var(--accent-green); }
+.overview-card .label {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-top: 4px;
+}
+
+/* ── Tab Bar ── */
+.tab-bar {
+  display: flex;
+  margin: 0 16px;
+  gap: 4px;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 4px;
+  box-shadow: 0 1px 4px var(--shadow);
+}
+.tab-btn {
+  flex: 1;
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab-btn.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* ── Section ── */
+.section {
+  padding: 16px;
+}
+.section-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  padding-left: 4px;
+}
+
+/* ── Task Status Table ── */
+.status-table {
+  width: 100%;
+  background: var(--card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+.status-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.status-row:last-child { border-bottom: none; }
+.status-row.header {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.status-row .col-name { flex: 2; font-size: 14px; }
+.status-row .col-freq { flex: 1; font-size: 12px; color: var(--text-light); }
+.status-row .col-status { flex: 1; text-align: center; }
+.status-row .col-last { flex: 1.5; font-size: 12px; color: var(--text-light); text-align: right; }
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.status-badge.done { background: rgba(143,166,142,0.2); color: #5a7a59; }
+.status-badge.overdue { background: rgba(196,145,123,0.2); color: #9a6040; }
+.status-badge.pending { background: rgba(181,169,154,0.15); color: var(--text-light); }
+
+/* ── Photo Gallery ── */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+.photo-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+.photo-card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+.photo-card .info {
+  padding: 10px 12px;
+}
+.photo-card .info .task-name {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+.photo-card .info .date {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+/* ── Photo Lightbox ── */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  cursor: pointer;
+}
+.lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+/* ── Weekly Report ── */
+.report-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+.report-card h4 {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 15px;
+  margin-bottom: 12px;
+  color: var(--primary);
+}
+.report-bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.report-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+.report-bar-fill.good { background: var(--accent-green); }
+.report-bar-fill.warn { background: var(--accent-warm); }
+.report-bar-fill.mid { background: var(--primary-light); }
+.report-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.report-stat .value { font-weight: 700; }
+
+/* ── Flower Log ── */
+.flower-timeline {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px var(--shadow);
+}
+.flower-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.flower-entry:last-child { border-bottom: none; }
+.flower-icon { font-size: 18px; }
+
+/* ── Loading ── */
+.loading-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-light);
+}
+.loading-spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Empty State ── */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-light);
+}
+.empty-state .icon { font-size: 32px; margin-bottom: 12px; }
+
+.bottom-spacer { height: 40px; }
+
+/* ── Refresh Button ── */
+.refresh-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 100;
+  transition: transform 0.2s;
+}
+.refresh-btn:active { transform: scale(0.9); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script>
+const { useState, useEffect, useCallback } = React;
+const e = React.createElement;
+
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+const SHEET_API = 'YOUR_APPS_SCRIPT_URL_HERE';
+
+const TASKS = [
+  { id: 'toilet',      name: '马桶刷洁厕灵',       freq: 'weekly',    photo: true },
+  { id: 'mop',         name: '拖地',               freq: 'weekly',    photo: false },
+  { id: 'stove',       name: '擦灶台',             freq: 'weekly',    photo: false },
+  { id: 'mosquito',    name: '倒蚊香灰',           freq: 'weekly',    photo: false },
+  { id: 'tidy',        name: '茶几/桌子/沙发收纳',  freq: 'weekly',    photo: true },
+  { id: 'pillowcase',  name: '枕套换洗',           freq: 'weekly',    photo: false },
+  { id: 'towels',      name: '毛巾+浴巾换洗',      freq: 'weekly',    photo: false },
+  { id: 'shoe_powder', name: '鞋里撒脚臭粉',       freq: 'weekly',    photo: false },
+  { id: 'bedsheet',    name: '换床单',             freq: 'biweekly',  photo: false },
+  { id: 'bathroom',    name: '浴室水槽/镜子/瓶罐擦', freq: 'biweekly', photo: true },
+  { id: 'leather_shoe',name: '皮鞋泡洗衣粉除味',    freq: 'biweekly',  photo: false },
+  { id: 'trash_can',   name: '垃圾桶内壁擦一次',    freq: 'biweekly',  photo: false },
+  { id: 'ashtray',     name: '洗烟灰缸',           freq: 'biweekly',  photo: false },
+  { id: 'fridge',      name: '冰箱清理+擦+换除味盒', freq: 'monthly',  photo: false },
+  { id: 'vinegar_soak',name: '白醋小苏打泡衣服',     freq: 'monthly',  photo: false },
+  { id: 'washer',      name: '洗衣机清洁剂清洗',     freq: 'monthly',  photo: false },
+  { id: 'shoes_wash',  name: '拖鞋和日常鞋机洗',     freq: 'monthly',  photo: false },
+  { id: 'ac_filter',   name: '空调/风扇滤网擦',      freq: 'monthly',  photo: false },
+];
+
+const TASK_MAP = {};
+TASKS.forEach(t => TASK_MAP[t.id] = t);
+
+const FREQ_LABELS = { weekly: '每周', biweekly: '每两周', monthly: '每月' };
+const FREQ_DAYS = { weekly: 7, biweekly: 14, monthly: 30 };
+
+// ══════════════════════════════════════════
+// DATA FETCH
+// ══════════════════════════════════════════
+async function fetchRecords() {
+  try {
+    const resp = await fetch(`${SHEET_API}?action=getRecords`);
+    return await resp.json();
+  } catch (err) {
+    console.error('Failed to fetch records:', err);
+    return [];
+  }
+}
+
+async function fetchFlowers() {
+  try {
+    const resp = await fetch(`${SHEET_API}?action=getFlowers`);
+    return await resp.json();
+  } catch (err) {
+    console.error('Failed to fetch flowers:', err);
+    return [];
+  }
+}
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+function isCompletedInPeriod(taskId, freq, records) {
+  const now = new Date();
+  const days = FREQ_DAYS[freq];
+  const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+  const task = TASKS.find(t => t.id === taskId);
+  const target = task && task.target ? task.target : 1;
+  const count = records.filter(r => r.taskId === taskId && new Date(r.date) > cutoff).length;
+  return count >= target;
+}
+
+function isOverdue(taskId, freq, records) {
+  const days = FREQ_DAYS[freq];
+  const taskRecords = records.filter(r => r.taskId === taskId);
+  if (taskRecords.length === 0) return true;
+  const lastDone = new Date(Math.max(...taskRecords.map(r => new Date(r.date).getTime())));
+  return (new Date() - lastDone) > (days + 2) * 24 * 60 * 60 * 1000;
+}
+
+function getLastDone(taskId, records) {
+  const taskRecords = records.filter(r => r.taskId === taskId);
+  if (taskRecords.length === 0) return null;
+  return new Date(Math.max(...taskRecords.map(r => new Date(r.date).getTime())));
+}
+
+function getWeekRecords(records, weeksAgo = 0) {
+  const now = new Date();
+  const weekEnd = new Date(now);
+  weekEnd.setDate(now.getDate() - now.getDay() - weeksAgo * 7 + 7);
+  weekEnd.setHours(0, 0, 0, 0);
+  const weekStart = new Date(weekEnd);
+  weekStart.setDate(weekEnd.getDate() - 7);
+  return records.filter(r => {
+    const d = new Date(r.date);
+    return d >= weekStart && d < weekEnd;
+  });
+}
+
+function getCompletionRate(records, weeksAgo = 0) {
+  const weekRecords = getWeekRecords(records, weeksAgo);
+  const weeklyTasks = TASKS.filter(t => t.freq === 'weekly');
+  const completed = new Set(weekRecords.filter(r => TASK_MAP[r.taskId]?.freq === 'weekly').map(r => r.taskId));
+  return weeklyTasks.length > 0 ? (completed.size / weeklyTasks.length * 100) : 0;
+}
+
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString('zh-CN', {
+    month: 'short', day: 'numeric', weekday: 'short',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+
+// ══════════════════════════════════════════
+// COMPONENTS
+// ══════════════════════════════════════════
+
+function OverviewCards({ records, flowers }) {
+  const totalDone = records.length;
+  const overdueCount = TASKS.filter(t => isOverdue(t.id, t.freq, records)).length;
+  const completedCount = TASKS.filter(t => isCompletedInPeriod(t.id, t.freq, records)).length;
+  const rate = TASKS.length > 0 ? Math.round(completedCount / TASKS.length * 100) : 0;
+
+  return e('div', { className: 'overview-grid' },
+    e('div', { className: 'overview-card' },
+      e('div', { className: `num ${rate >= 60 ? 'good' : rate >= 30 ? '' : 'warn'}` }, `${rate}%`),
+      e('div', { className: 'label' }, '当前完成率'),
+    ),
+    e('div', { className: 'overview-card' },
+      e('div', { className: `num ${overdueCount > 3 ? 'warn' : ''}` }, overdueCount),
+      e('div', { className: 'label' }, '超期项目'),
+    ),
+    e('div', { className: 'overview-card' },
+      e('div', { className: 'num' }, completedCount),
+      e('div', { className: 'label' }, '周期内完成'),
+    ),
+    e('div', { className: 'overview-card' },
+      e('div', { className: 'num' }, totalDone),
+      e('div', { className: 'label' }, '累计打卡'),
+    ),
+    e('div', { className: 'overview-card' },
+      e('div', { className: 'num' }, (() => {
+        const fl = flowers || [];
+        const waters = fl.filter(f => f.type === 'water');
+        const lastW = waters.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
+        return lastW ? Math.round((Date.now() - new Date(lastW.date).getTime()) / 864e5) + 'd' : '-';
+      })()),
+      e('div', { className: 'label' }, '距上次换水'),
+    ),
+  );
+}
+
+function StatusTable({ records }) {
+  return e('div', { className: 'status-table' },
+    e('div', { className: 'status-row header' },
+      e('div', { className: 'col-name' }, '项目'),
+      e('div', { className: 'col-freq' }, '频率'),
+      e('div', { className: 'col-status' }, '状态'),
+      e('div', { className: 'col-last' }, '上次完成'),
+    ),
+    TASKS.map(task => {
+      const completed = isCompletedInPeriod(task.id, task.freq, records);
+      const overdue = !completed && isOverdue(task.id, task.freq, records);
+      const lastDone = getLastDone(task.id, records);
+
+      let statusClass = 'pending';
+      let statusText = '待完成';
+      if (completed) { statusClass = 'done'; statusText = '已完成'; }
+      else if (overdue) { statusClass = 'overdue'; statusText = '超期'; }
+
+      return e('div', { key: task.id, className: 'status-row' },
+        e('div', { className: 'col-name' }, task.name),
+        e('div', { className: 'col-freq' }, FREQ_LABELS[task.freq]),
+        e('div', { className: 'col-status' },
+          e('span', { className: `status-badge ${statusClass}` }, statusText),
+        ),
+        e('div', { className: 'col-last' },
+          lastDone ? lastDone.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }) : '从未',
+        ),
+      );
+    }),
+  );
+}
+
+function PhotoGallery({ records, onPhotoClick }) {
+  const photoRecords = records.filter(r => r.photoUrl).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  if (photoRecords.length === 0) {
+    return e('div', { className: 'empty-state' },
+      e('div', { className: 'icon' }, '📷'),
+      e('p', null, '还没有照片'),
+    );
+  }
+
+  return e('div', { className: 'photo-grid' },
+    photoRecords.map((r, i) =>
+      e('div', { key: i, className: 'photo-card', onClick: () => onPhotoClick(r.photoUrl) },
+        e('img', { src: r.photoUrl, alt: r.taskName, loading: 'lazy' }),
+        e('div', { className: 'info' },
+          e('div', { className: 'task-name' }, r.taskName || TASK_MAP[r.taskId]?.name || r.taskId),
+          e('div', { className: 'date' }, formatDate(r.date)),
+        ),
+      ),
+    ),
+  );
+}
+
+function WeeklyReport({ records }) {
+  const weeks = [0, 1, 2, 3]; // Current week + 3 past weeks
+
+  return e(React.Fragment, null,
+    weeks.map(w => {
+      const weekRecords = getWeekRecords(records, w);
+      const rate = getCompletionRate(records, w);
+      const uniqueTasks = new Set(weekRecords.map(r => r.taskId));
+      const now = new Date();
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay() - w * 7);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+
+      const label = w === 0 ? '本周' : w === 1 ? '上周' : `${w}周前`;
+      const barClass = rate >= 70 ? 'good' : rate >= 40 ? 'mid' : 'warn';
+
+      return e('div', { key: w, className: 'report-card' },
+        e('h4', null, `${label} · ${weekStart.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}`),
+        e('div', { className: 'report-stat' },
+          e('span', null, '周任务完成率'),
+          e('span', { className: 'value' }, `${Math.round(rate)}%`),
+        ),
+        e('div', { className: 'report-bar' },
+          e('div', { className: `report-bar-fill ${barClass}`, style: { width: `${rate}%` } }),
+        ),
+        e('div', { className: 'report-stat' },
+          e('span', null, '打卡次数'),
+          e('span', { className: 'value' }, weekRecords.length),
+        ),
+        e('div', { className: 'report-stat' },
+          e('span', null, '覆盖项目'),
+          e('span', { className: 'value' }, uniqueTasks.size),
+        ),
+        // List skipped weekly tasks
+        w === 0 ? (() => {
+          const weeklyTasks = TASKS.filter(t => t.freq === 'weekly');
+          const skipped = weeklyTasks.filter(t => !uniqueTasks.has(t.id));
+          if (skipped.length === 0) return null;
+          return e('div', { style: { marginTop: '8px', fontSize: '12px', color: 'var(--accent-warm)' } },
+            '未完成：' + skipped.map(t => t.name).join('、'),
+          );
+        })() : null,
+      );
+    }),
+  );
+}
+
+function FlowerLog({ flowers }) {
+  if (flowers.length === 0) {
+    return e('div', { className: 'empty-state' },
+      e('div', { className: 'icon' }, '🌸'),
+      e('p', null, '还没有鲜花记录'),
+    );
+  }
+
+  const sorted = [...flowers].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  return e('div', { className: 'flower-timeline' },
+    sorted.slice(0, 30).map((f, i) =>
+      e('div', { key: i, className: 'flower-entry' },
+        e('span', { className: 'flower-icon' }, f.type === 'wake' ? '🌸' : '💧'),
+        e('span', null, f.type === 'wake' ? '醒花+插瓶' : '换水'),
+        e('span', { style: { marginLeft: 'auto', fontSize: '12px', color: 'var(--text-light)' } },
+          formatDate(f.date)),
+      ),
+    ),
+  );
+}
+
+// ══════════════════════════════════════════
+// MAIN APP
+// ══════════════════════════════════════════
+function App() {
+  const [tab, setTab] = useState('overview');
+  const [records, setRecords] = useState([]);
+  const [flowers, setFlowers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [lightbox, setLightbox] = useState(null);
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    const [recs, fls] = await Promise.all([fetchRecords(), fetchFlowers()]);
+    setRecords(recs);
+    setFlowers(fls);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { loadData(); }, [loadData]);
+
+  if (loading) {
+    return e('div', { className: 'loading-state' },
+      e('div', { className: 'loading-spinner' }),
+      e('p', { style: { marginTop: '12px' } }, '加载数据中...'),
+    );
+  }
+
+  return e(React.Fragment, null,
+    e('div', { className: 'app-header' },
+      e('h1', null, '🐾 Phil の 督察总部'),
+      e('div', { className: 'subtitle' }, `v1.3.0 · 数据更新于 ${new Date().toLocaleString('zh-CN')}`),
+    ),
+
+    e(OverviewCards, { records, flowers }),
+
+    e('div', { className: 'tab-bar' },
+      ['overview', 'photos', 'report', 'flowers'].map(t =>
+        e('button', {
+          key: t,
+          className: `tab-btn ${tab === t ? 'active' : ''}`,
+          onClick: () => setTab(t),
+        }, { overview: '状态', photos: '照片', report: '周报', flowers: '鲜花' }[t]),
+      ),
+    ),
+
+    e('div', { className: 'section' },
+      tab === 'overview' ? e(React.Fragment, null,
+        e('div', { className: 'section-title' }, '所有项目状态'),
+        e(StatusTable, { records }),
+      ) : null,
+
+      tab === 'photos' ? e(React.Fragment, null,
+        e('div', { className: 'section-title' }, '照片时间线'),
+        e(PhotoGallery, { records, onPhotoClick: (url) => setLightbox(url) }),
+      ) : null,
+
+      tab === 'report' ? e(React.Fragment, null,
+        e('div', { className: 'section-title' }, '周报趋势'),
+        e(WeeklyReport, { records }),
+      ) : null,
+
+      tab === 'flowers' ? e(React.Fragment, null,
+        e('div', { className: 'section-title' }, '鲜花管理记录'),
+        e(FlowerLog, { flowers }),
+      ) : null,
+    ),
+
+    e('div', { className: 'bottom-spacer' }),
+
+    // Refresh FAB
+    e('button', { className: 'refresh-btn', onClick: loadData, title: '刷新数据' }, '↻'),
+
+    // Lightbox
+    lightbox ? e('div', { className: 'lightbox', onClick: () => setLightbox(null) },
+      e('img', { src: lightbox }),
+    ) : null,
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+</script>
+</body>
+</html>
