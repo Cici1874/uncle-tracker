@@ -601,29 +601,30 @@ function App() {
   var cs=useState(getSeenVersion()!==APP_VERSION&&hasSeenGuide()),showChangelog=cs[0],setShowChangelog=cs[1];
   var syns=useState(false),syncing=syns[0],setSyncing=syns[1];
 
-  // Manual sync: push all local records to Sheet
-  var syncAllToSheet=async function(){
+  // Manual sync: push all local records to Sheet (fire-and-forget, batched)
+  var syncAllToSheet=function(){
     setSyncing(true);
     var localRecs=loadRecords();
     var localFlowers=loadFlowerLog();
-    var count=0;
-    for(var i=0;i<localRecs.length;i++){
+    var total=localRecs.length+localFlowers.length;
+    // Fire all requests without awaiting (no-cors won't give response anyway)
+    localRecs.forEach(function(r){
       try{
-        var r=localRecs[i];
         var p=new URLSearchParams({action:'addRecord',taskId:r.taskId,taskName:r.taskName,date:r.date,photoUrl:r.photoUrl||'',freq:r.freq});
-        await fetch(SHEET_API+'?'+p.toString(),{mode:'no-cors',redirect:'follow'});
-        count++;
+        fetch(SHEET_API+'?'+p.toString(),{mode:'no-cors',redirect:'follow'});
       }catch(e){}
-    }
-    for(var j=0;j<localFlowers.length;j++){
+    });
+    localFlowers.forEach(function(f){
       try{
-        var f=localFlowers[j];
-        var p2=new URLSearchParams({action:'addFlower',type:f.type,date:f.date});
-        await fetch(SHEET_API+'?'+p2.toString(),{mode:'no-cors',redirect:'follow'});
+        var p=new URLSearchParams({action:'addFlower',type:f.type,date:f.date});
+        fetch(SHEET_API+'?'+p.toString(),{mode:'no-cors',redirect:'follow'});
       }catch(e){}
-    }
-    setSyncing(false);
-    showToastFn('同步完成！已上传 '+count+' 条打卡 + '+localFlowers.length+' 条鲜花记录');
+    });
+    // Give requests 3 seconds to fire off, then show done
+    setTimeout(function(){
+      setSyncing(false);
+      showToastFn('同步已发送！'+localRecs.length+' 条打卡 + '+localFlowers.length+' 条鲜花记录');
+    },3000);
   };
 
   // Startup sync: merge Sheet data into localStorage (id-based, not overwrite)
