@@ -1,0 +1,21 @@
+{
+  "name": "Phil の 督察总部",
+  "short_name": "督察总部",
+  "description": "家务督察数据监控",
+  "start_url": "./admin.html",
+  "display": "standalone",
+  "background_color": "#F5F0EB",
+  "theme_color": "#9B8E82",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

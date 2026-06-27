@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="督察总部">
+<link rel="manifest" href="manifest_admin.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Phil の 督察总部</title>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -670,6 +672,7 @@ function App() {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw_admin.js?v=1.0.0')}
 </script>
 </body>
 </html>
