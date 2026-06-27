@@ -1,7 +1,7 @@
 // Phil の 家务督察站 — Service Worker
-// v1.4.1
+// v1.4.2
 
-const CACHE_NAME = 'phil-inspector-v1.4.1';
+const CACHE_NAME = 'phil-inspector-v1.4.2';
 
 // Network-first strategy
 self.addEventListener('fetch', (event) => {

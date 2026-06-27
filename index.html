@@ -45,6 +45,9 @@ body {
 .header-text { flex:1; }
 .help-btn { width:32px; height:32px; border-radius:50%; border:1.5px solid var(--border); background:var(--card); color:var(--text-light); font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; }
 .help-btn:hover { border-color:var(--primary); color:var(--primary); }
+.sync-btn { width:32px; height:32px; border-radius:50%; border:1.5px solid var(--accent-green); background:var(--card); color:var(--accent-green); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; }
+.sync-btn:hover { background:var(--accent-green); color:#fff; }
+.sync-btn.syncing { animation:spin 0.8s linear infinite; pointer-events:none; opacity:0.6; }
 
 /* Phil Banner */
 .phil-banner {
@@ -225,7 +228,7 @@ const {useState,useEffect,useCallback,useRef} = React;
 const e = React.createElement;
 
 // ══════════ CONFIG ══════════
-const APP_VERSION = '1.4.1';
+const APP_VERSION = '1.4.2';
 const CLOUDINARY_CLOUD = 'dfahiahjp';
 const CLOUDINARY_PRESET = 'ml_default';
 const SHEET_API = 'https://script.google.com/macros/s/AKfycbxjr92-25m5Ud7jv3DbHG_kjkaONS18FAjlBwVOh_P9WDg1HBwaDEU4SPNSUUK_yCCD/exec';
@@ -241,6 +244,9 @@ const PHIL_IMAGES = {
 
 // ══════════ CHANGELOG ══════════
 const CHANGELOG = {
+  '1.4.2': [
+    'Header新增☁同步按钮，一键把本地历史数据推到云端',
+  ],
   '1.4.1': [
     '撤销按钮改到任务卡片上，橘粉色闪烁提示，持续15秒不会错过',
   ],
@@ -593,6 +599,32 @@ function App() {
   var tos=useState(null),toast=tos[0],setToast=tos[1];
   var gs=useState(!hasSeenGuide()),showGuide=gs[0],setShowGuide=gs[1];
   var cs=useState(getSeenVersion()!==APP_VERSION&&hasSeenGuide()),showChangelog=cs[0],setShowChangelog=cs[1];
+  var syns=useState(false),syncing=syns[0],setSyncing=syns[1];
+
+  // Manual sync: push all local records to Sheet
+  var syncAllToSheet=async function(){
+    setSyncing(true);
+    var localRecs=loadRecords();
+    var localFlowers=loadFlowerLog();
+    var count=0;
+    for(var i=0;i<localRecs.length;i++){
+      try{
+        var r=localRecs[i];
+        var p=new URLSearchParams({action:'addRecord',taskId:r.taskId,taskName:r.taskName,date:r.date,photoUrl:r.photoUrl||'',freq:r.freq});
+        await fetch(SHEET_API+'?'+p.toString(),{mode:'no-cors',redirect:'follow'});
+        count++;
+      }catch(e){}
+    }
+    for(var j=0;j<localFlowers.length;j++){
+      try{
+        var f=localFlowers[j];
+        var p2=new URLSearchParams({action:'addFlower',type:f.type,date:f.date});
+        await fetch(SHEET_API+'?'+p2.toString(),{mode:'no-cors',redirect:'follow'});
+      }catch(e){}
+    }
+    setSyncing(false);
+    showToastFn('同步完成！已上传 '+count+' 条打卡 + '+localFlowers.length+' 条鲜花记录');
+  };
 
   // Startup sync: merge Sheet data into localStorage (id-based, not overwrite)
   useEffect(function(){
@@ -681,6 +713,7 @@ function App() {
     e('div',{className:'app-header'},
       e('img',{src:PHIL_IMAGES.avatar,className:'header-avatar'}),
       e('div',{className:'header-text'},e('h1',null,'Phil の 家务督察站'),e('div',{className:'subtitle'},'v'+APP_VERSION+' · 舅舅专用')),
+      e('button',{className:'sync-btn'+(syncing?' syncing':''),onClick:syncAllToSheet,title:'同步数据到云端'},'☁'),
       e('button',{className:'help-btn',onClick:function(){setShowGuide(true)},title:'使用指南'},'?'),
     ),
     e(PhilBanner,{records:records}),
@@ -705,7 +738,7 @@ function App() {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(e(App));
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=1.4.1')}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=1.4.2')}
 </script>
 </body>
 </html>
