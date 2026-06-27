@@ -388,10 +388,10 @@ async function uploadToCloudinary(file) {
 
 // ══════════ SHEET SYNC ══════════
 async function syncToSheet(rec) {
-  try { var p=new URLSearchParams({action:'addRecord',taskId:rec.taskId,taskName:rec.taskName,date:rec.date,photoUrl:rec.photoUrl||'',freq:rec.freq}); await fetch(SHEET_API+'?'+p.toString()); } catch(e) { console.warn('Sync failed:',e); }
+  try { var p=new URLSearchParams({action:'addRecord',taskId:rec.taskId,taskName:rec.taskName,date:rec.date,photoUrl:rec.photoUrl||'',freq:rec.freq}); await fetch(SHEET_API+'?'+p.toString(),{mode:'no-cors',redirect:'follow'}); } catch(e) { console.warn('Sync failed:',e); }
 }
 async function syncFlowerToSheet(entry) {
-  try { var p=new URLSearchParams({action:'addFlower',type:entry.type,date:entry.date}); await fetch(SHEET_API+'?'+p.toString()); } catch(e) { console.warn('Sync failed:',e); }
+  try { var p=new URLSearchParams({action:'addFlower',type:entry.type,date:entry.date}); await fetch(SHEET_API+'?'+p.toString(),{mode:'no-cors',redirect:'follow'}); } catch(e) { console.warn('Sync failed:',e); }
 }
 
 // ══════════ GUIDE MODAL ══════════
