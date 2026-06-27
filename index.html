@@ -228,7 +228,7 @@ const e = React.createElement;
 const APP_VERSION = '1.4.1';
 const CLOUDINARY_CLOUD = 'dfahiahjp';
 const CLOUDINARY_PRESET = 'ml_default';
-const SHEET_API = 'YOUR_APPS_SCRIPT_URL_HERE';
+const SHEET_API = 'https://script.google.com/macros/s/AKfycbxjr92-25m5Ud7jv3DbHG_kjkaONS18FAjlBwVOh_P9WDg1HBwaDEU4SPNSUUK_yCCD/exec';
 
 // ══════════ PHIL IMAGES ══════════
 const PHIL_IMAGES = {
@@ -596,7 +596,7 @@ function App() {
 
   // Startup sync: merge Sheet data into localStorage (id-based, not overwrite)
   useEffect(function(){
-    if(SHEET_API==='YOUR_APPS_SCRIPT_URL_HERE') return; // skip if not configured
+    if(SHEET_API==='https://script.google.com/macros/s/AKfycbxjr92-25m5Ud7jv3DbHG_kjkaONS18FAjlBwVOh_P9WDg1HBwaDEU4SPNSUUK_yCCD/exec') return; // skip if not configured
     // Records merge
     fetch(SHEET_API+'?action=getRecords').then(function(r){return r.json()}).then(function(cloudRecs){
       if(!Array.isArray(cloudRecs)||!cloudRecs.length) return;
